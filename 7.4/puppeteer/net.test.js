@@ -1,9 +1,7 @@
 let page;
-// cd ideaprojects\jsaqa\dz_3\jsaqa-code\7.4\puppeteer
+
 beforeEach(async () => {
 	page = await browser.newPage();
-	// тут были: page.setDefaultTimeout | page.setDefaultNavigationTimeout | jest.setTimeout |page.waitForTimeout
-	// https://github.com/facebook/jest/issues/11607
 	await page.goto('https://netology.ru');
 }, 30000);
 
@@ -12,14 +10,13 @@ afterEach(() => {
 });
 
 describe('Netology.ru tests', () => {
+	beforeEach(async () => {
+		await page.goto('https://netology.ru');
+	});
 	test("The first test'", async () => {
 		const title = await page.title();
 		console.log('Page title: ' + title);
 		const firstLink = await page.$('header a + a');
-		// const firstLinkText = await page.$eval(
-		//   "header a + a",
-		//   (link) => link.textContent
-		// );
 		await firstLink.click();
 		await page.waitForNavigation();
 		const title2 = await page.title();
@@ -51,22 +48,19 @@ describe('Netology.ru tests', () => {
 });
 
 test("Title should be 'Вакансии в Нетологии – найти работу'", async () => {
-	await page.goto('https://netology.ru/job');
-	await page.waitForTimeout(3000);
+	await page.goto('https://netology.ru/job', { waitUntil: 'load' });
 	expect(await page.title()).toContain('Вакансии в Нетологии – найти работу');
 }, 15000);
 
 test("Title should be 'Станьте экспертом Нетологии – присоединиться к команде'", async () => {
-	await page.goto('https://netology.ru/experts');
-	await page.waitForTimeout(3000);
+	await page.goto('https://netology.ru/experts', { waitUntil: 'load' });
 	expect(await page.title()).toContain(
 		'Станьте экспертом Нетологии – присоединиться к команде'
 	);
 }, 15000);
 
 test("Title should be 'Партнерская программа и информационная поддержка'", async () => {
-	await page.goto('https://netology.ru/partners');
-	await page.waitForTimeout(3000);
+	await page.goto('https://netology.ru/partners', { waitUntil: 'load' });
 	expect(await page.title()).toContain(
 		'Партнерская программа и информационная поддержка'
 	);
