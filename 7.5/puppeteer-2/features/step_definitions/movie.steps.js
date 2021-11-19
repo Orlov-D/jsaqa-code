@@ -2,7 +2,12 @@ const puppeteer = require('puppeteer');
 const chai = require('chai');
 const expect = chai.expect;
 const { Given, When, Then, Before, After } = require('cucumber');
-const { clickElement, putText, getText } = require('../../lib/commands.js');
+const { clickElement } = require('../../lib/commands.js');
+const { bookingSomeChairs, successBooking } = require('../../lib/util.js');
+
+let day = '.page-nav > a:nth-child(3)';
+let time = 'a.movie-seances__time';
+let button = 'button.acceptin-button';
 
 Before(async function () {
 	const browser = await puppeteer.launch({ headless: false, slowMo: 50 });
@@ -17,52 +22,33 @@ After(async function () {
 	}
 });
 
-Given('user is on {string} page', async function (string) {
+Given('Пользователь находится на странице {string}', async function (string) {
 	return await this.page.goto(`${string}`, {
 		setTimeout: 20000,
 	});
 });
 
-When('user choose day {string}', async function (string) {
-	await clickElement(this.page, `${string}`); //choose day
-});
-When('user choose time {string}', async function (string) {
-	await clickElement(this.page, `${string}`); //choose time
-});
-When('user choose chair {string}', async function (string) {
-	await clickElement(this.page, `${string}`); //choose chair
-});
-When('user click booking {string}', async function (string) {
-	await clickElement(this.page, `${string}`); //click booking
-});
-When('user click for qr! {string}', async function (string) {
-	await clickElement(this.page, `${string}`); //click for qr!
+When('Пользователь бронирует 1 место в зале', async function (string) {
+	await bookingSomeChairs(this.page, day, time, button, 'chair 2');
 });
 
-When('user sees the qr text first time {string}', async function (string) {
-	const actual = await getText(this.page, 'p.ticket__hint');
-	const expected = await string;
-	expect(actual).contains(expected);
+When('Пользователь бронирует 2 места в зале', async function (string) {
+	await bookingSomeChairs(this.page, day, time, button, 'chair 7', 'chair 7');
 });
 
-When('user go on {string} page', async function (string) {
-	return await this.page.goto(`${string}`, {
-		setTimeout: 20000,
-	});
-});
-
-Then('user sees the qr text {string}', async function (string) {
-	const actual = await getText(this.page, 'p.ticket__hint');
-	const expected = await string;
-	expect(actual).contains(expected);
-});
-
-Then('booking button disabled {string}', async function (string) {
-	const actual = String(
-		await this.page.$eval('button', (button) => {
-			return button.disabled;
-		})
+Then('Пользователь получил qr-code', async function (string) {
+	await successBooking(
+		this.page,
+		'Покажите QR-код нашему контроллеру для подтверждения бронирования.'
 	);
-	const expected = await string;
-	expect(actual).contains(expected);
 });
+
+Then(
+	'Пользователь не может забронировать уже забронированное место',
+	async function () {
+		const actual = await this.page.$eval('button', (button) => {
+			return button.disabled;
+		});
+		expect(actual).to.be.true;
+	}
+);
