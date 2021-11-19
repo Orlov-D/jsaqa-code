@@ -36,6 +36,18 @@ When('Пользователь бронирует 2 места в зале', asy
 	await bookingSomeChairs(this.page, day, time, button, 'chair 7', 'chair 7');
 });
 
+When('Пользователь бронирует 1 место в зале дважды', async function (string) {
+	await bookingSomeChairs(this.page, day, time, button, 'chair 3');
+	await successBooking(
+		this.page,
+		'Покажите QR-код нашему контроллеру для подтверждения бронирования.'
+	);
+	await page.goto('http://qamid.tmweb.ru/client/index.php');
+	await clickElement(page, day);
+	await clickElement(page, time);
+	await clickElement(page, 'chair 2');
+});
+
 Then('Пользователь получил qr-code', async function (string) {
 	await successBooking(
 		this.page,
